@@ -7,7 +7,7 @@ import cv2 as cv
 import numpy as np
 from collections import namedtuple
 
-VERSION = 1
+VERSION = 0
 
 class TerminalCodes:
     RED = '\033[91m'
@@ -61,6 +61,15 @@ INPUT = None
 OUTPUT = None
 TRANSFORMATION = None
 
+def scale_and_pad(image, rows, cols):
+    scale = min((rows - 4) / image.shape[0], (cols - 4) / image.shape[1])
+    image = cv.resize(image, (int(image.shape[0] * scale), int(image.shape[1] * scale)))
+    
+    xPadding = (cols - image.shape[1]) / 2
+    yPadding = (rows - image.shape[0]) / 2
+
+    return cv.copyMakeBorder(image, math.floor(yPadding), math.ceil(yPadding), math.floor(xPadding), math.ceil(xPadding), cv.BORDER_CONSTANT)
+
 def from_idx_file(path):
     try: image_file = gzip.open(path)
     except FileNotFoundError: err('Invalid IDX image file path.')
@@ -91,7 +100,7 @@ def from_idx_file(path):
     cols = int.from_bytes(image_file.read(4), 'big')
 
     if image_count != label_count: err('Image count and label count do not match.')
-
+    
     images, labels = [], []
     size = rows * cols
 
@@ -135,15 +144,7 @@ def from_image_file(path):
 
     for box in boxes:
         box_image = image[box[1]:box[1] + box[3], box[0]:box[0] + box[2]]
-
-        scale = min((rows - 4) / box_image.shape[0], (cols - 4) / box_image.shape[1])
-
-        box_image = cv.resize(box_image, (int(box_image.shape[0] * scale), int(box_image.shape[1] * scale)))
-        
-        xPadding = (cols - box_image.shape[1]) / 2
-        yPadding = (rows - box_image.shape[0]) / 2
-
-        box_image = cv.copyMakeBorder(box_image, math.floor(yPadding), math.ceil(yPadding), math.floor(xPadding), math.ceil(xPadding), cv.BORDER_CONSTANT)
+        box_image = scale_and_pad(box_image, rows, cols)
 
         # TODO: Remove this after debug
         assert box_image.shape == (rows, cols)
@@ -260,7 +261,7 @@ def transform():
             for i in range(len(images)):
                 image = images[i]
                 rows, cols = image.shape
-                images[i] = np.array([[T(image[r, c], r, c) for c in range(cols)] for r in range(rows)])
+                images[i] = np.array([[T(image[r, c], r, c) for c in range(cols)] for r in range(rows)], dtype=np.uint8)
         else:
             T = np.vectorize(eval(f'lambda px: {T}'))
             images = [T(image) for image in images]
@@ -413,6 +414,24 @@ def train():
             tf.train.write_graph(frozen, 'model', save_path, as_text=False)
     else: model.save(save_path)
 
+def refit():
+    images, mappings, labels = from_cdx_file(INPUT if INPUT else get_input('Path to CDX: '))
+    rows, cols = images[0].shape
+
+    for i in range(len(images)):
+        _, thresholded = cv.threshold(images[i], 1, 255, cv.THRESH_BINARY)
+        contours, _ = cv.findContours(thresholded, mode=cv.RETR_EXTERNAL, method=cv.CHAIN_APPROX_SIMPLE)
+        box = cv.boundingRect(max(contours, key=lambda c: cv.contourArea(c)))
+
+        images[i] = scale_and_pad(images[i][box[1]:box[1] + box[3], box[0]:box[0] + box[2]], rows, cols)
+
+    write_cdx(CDX(images, mappings, labels))
+
+def version():
+    print('''
+    CDX Command Line Tool v0.1-alpha
+    ''')
+
 def help():
     print('''
 Usage:
@@ -422,6 +441,7 @@ Commands:
   generate (gen)         Generate a new CDX file from an image or IDX file.
   concatenate (concat)   Concatenate two or more CDX files into one.
   transform              Perform a numerical pixel-by-pixel transformation on a CDX dataset.
+  refit                  Rescale all images in the dataset to eliminate blank space.
   display (disp)         Display the contents of a CDX file.
   summarize              Summarize the data in a CDX file.
   train                  Train a TensorFlow model on a CDX dataset.
@@ -450,9 +470,11 @@ try:
     if COMMAND in ['generate', 'gen']: generate()
     elif COMMAND in ['concatenate', 'concat']: concatenate()
     elif COMMAND == 'transform': transform()
+    elif COMMAND == 'refit': refit()
     elif COMMAND in ['display', 'disp']: display()
     elif COMMAND == 'summarize': summarize()
     elif COMMAND == 'train': train()
+    elif COMMAND == 'version': version()
     elif COMMAND == 'help': help()
     else: err('Invalid command. Type \"cdx help\" to list commands.')
 except KeyboardInterrupt: print()
