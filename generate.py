@@ -97,8 +97,8 @@ def generate():
 
     extension = path.split('.')[-1]
     if extension == 'cdx': cdx = inout.from_cdx_file(path)
-    elif extension in ['idx', 'gz']: cdx = inout.from_idx_file(path)
-    elif extension in ['jpg', 'jpeg', 'png']: cdx = inout.from_image_file(path)
+    elif extension in ['idx', 'gz']: cdx = from_idx_file(path)
+    elif extension in ['jpg', 'jpeg', 'png']: cdx = from_image_file(path)
     else: inout.err(f'"{extension}" is not a valid file type for generation.')
 
     inout.write_cdx(cdx)
