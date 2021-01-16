@@ -1,4 +1,5 @@
 import os
+import copy
 import inout
 import config
 import random
@@ -33,6 +34,14 @@ def get_frozen_graph(model):
 
     return frozen.graph
 
+def shuffle_split_data(data, labels, train_split):
+    seed = random.randint(0, 256)
+    data = tf.random.shuffle(tf.convert_to_tensor(data), seed=seed)
+    labels = tf.random.shuffle(tf.convert_to_tensor(labels), seed=seed)
+
+    split_idx = round(len(data) * train_split)
+    return data[:split_idx], labels[:split_idx], data[split_idx:], labels[split_idx:]
+
 def train():
     images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
     images = [image / 255.0 for image in images]
@@ -45,15 +54,8 @@ def train():
     except ValueError: inout.err('Invalid epoch count. Must be integer.')
     if epochs < 1: inout.err('Invalid epoch count. Must be positive integer.')
 
-    seed = random.randint(0, 256)
-    images = tf.random.shuffle(tf.convert_to_tensor(images), seed=seed)
-    labels = tf.random.shuffle(tf.convert_to_tensor(labels), seed=seed)
-
-    split_idx = round(len(images) * train_split)
-    train_data = images[:split_idx]
-    train_labels = labels[:split_idx]
-    test_data = images[split_idx:]
-    test_labels = labels[split_idx:]
+    try: required_accuracy = float(config.REQUIRED_ACCURACY if config.REQUIRED_ACCURACY else 0)
+    except ValueError: inout.err('Invalid iteration count. Must be float.')
 
     layers, units_list, activations = [], [], []
 
@@ -113,13 +115,17 @@ def train():
 
     model.compile(optimizer=optimizer, loss=loss_metric, metrics=['accuracy'])
 
-    print()
-    model.fit(train_data, train_labels, epochs=epochs)
-    loss, accuracy = model.evaluate(test_data, test_labels, verbose=False)
+    accuracy = 0
+    while accuracy < required_accuracy:
+        train_data, train_labels, test_data, test_labels = shuffle_split_data(images, labels, train_split)
 
-    print()
-    print(f'Testing Accuracy: {accuracy}')
-    print(f'Testing Loss: {loss}')
+        print()
+        model.fit(train_data, train_labels, epochs=epochs)
+        loss, accuracy = model.evaluate(test_data, test_labels, verbose=False)
+
+        print()
+        print(f'Testing Accuracy: {accuracy}')
+        print(f'Testing Loss: {loss}')
 
     save_path = config.OUTPUT if config.OUTPUT else inout.get_input('Path to save model (leave blank to discard): ')
     if not save_path: return

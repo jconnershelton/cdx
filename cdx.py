@@ -23,6 +23,7 @@ def set_arguments():
     if '--transformation' in sys.argv: config.TRANSFORMATION = sys.argv[sys.argv.index('--transformation') + 1]
     if '--train_split' in sys.argv: config.TRAIN_SPLIT = sys.argv[sys.argv.index('--train_split') + 1]
     if '--epochs' in sys.argv: config.EPOCHS = sys.argv[sys.argv.index('--epochs') + 1]
+    if '--required_accuracy' in sys.argv: config.REQUIRED_ACCURACY = sys.argv[sys.argv.index('--required_accuracy') + 1]
 
 COMMAND = sys.argv[1]
 set_arguments()

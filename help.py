@@ -25,4 +25,5 @@ Non-Dialog Options:
   --transformation (-t)  Pixel transformation expression (px = pixel value, r = row, c = column).
   --train_split          Percent of dataset used for training vs reserved for testing.
   --epochs               Number of epochs to train a model.
+  --required_accuracy    The required accuracy to stop training and save a model.
 ''')
