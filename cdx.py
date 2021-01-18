@@ -13,7 +13,7 @@ from train import train
 from help import version
 from help import help
 
-if len(sys.argv) < 2: inout.err(f'Expected at least 2 arguments, received {len(sys.argv)}.')
+if len(sys.argv) < 2: inout.err(f'No command given. Type "cdx help" to list commands and options.')
 
 def set_arguments():
     if '-i' in sys.argv: config.INPUT = sys.argv[sys.argv.index('-i') + 1]
@@ -41,5 +41,5 @@ try:
     elif COMMAND == 'train': train()
     elif COMMAND == 'version': version()
     elif COMMAND == 'help': help()
-    else: inout.err('Invalid command. Type \"cdx help\" to list commands.')
+    else: inout.err('Invalid command. Type "cdx help" to list commands and options.')
 except KeyboardInterrupt: print()
