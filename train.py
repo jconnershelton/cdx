@@ -1,5 +1,4 @@
 import os
-import copy
 import inout
 import config
 import random
