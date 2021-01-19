@@ -3,7 +3,7 @@ import config
 from config import CDX
 
 def concatenate():
-    cdxs = [inout.from_cdx_file(config.INPUT)] if config.INPUT else []
+    cdxs = [inout.from_cdx_file(inout.INPUT)] if inout.INPUT else []
     while True:
         path = inout.get_input(f'Path to CDX {str(len(cdxs) + 1) + (" (leave blank if done)" if len(cdxs) > 1 else "")}: ')
         if not path: break

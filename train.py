@@ -1,6 +1,5 @@
 import os
 import inout
-import config
 import random
 import platform
 import numpy as np
@@ -8,6 +7,12 @@ import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+TRAIN_SPLIT = None
+EPOCHS = None
+REQUIRED_ACCURACY = None
+REQUIRED_LOSS = None
+CONFIG_FILE = None
 
 
 def draw_model_summary(layers):
@@ -38,22 +43,25 @@ def shuffle_split_data(data, labels, train_split):
 
 
 def train():
-    images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
+    images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))
     images = [image / 255.0 for image in images]
 
-    try: train_split = float(config.TRAIN_SPLIT if config.TRAIN_SPLIT else inout.get_input('Percent train split [float 0-100]: ')) / 100
+    try: train_split = float(TRAIN_SPLIT if TRAIN_SPLIT else inout.get_input('Percent train split [float 0-1]: '))
     except ValueError: inout.err('Invalid train split. Must be float.')
     if not 0 <= train_split <= 100: inout.err('Invalid train split. Must be between 0 and 100 inclusive.')
 
-    try: epochs = int(config.EPOCHS if config.EPOCHS else inout.get_input('Epochs [integer > 0]: '))
+    try: epochs = int(EPOCHS if EPOCHS else inout.get_input('Epochs [integer > 0]: '))
     except ValueError: inout.err('Invalid epoch count. Must be integer.')
     if epochs < 1: inout.err('Invalid epoch count. Must be positive integer.')
 
-    try: required_accuracy = float(config.REQUIRED_ACCURACY if config.REQUIRED_ACCURACY else 0)
-    except ValueError: inout.err('Invalid iteration count. Must be float.')
+    try: required_accuracy = float(REQUIRED_ACCURACY if REQUIRED_ACCURACY else 0)
+    except ValueError: inout.err('Invalid required accuracy. Must be float.')
 
-    if config.MODEL_CONFIG:
-        config_file = open(config.MODEL_CONFIG, 'r')
+    try: required_loss = float(REQUIRED_LOSS if REQUIRED_LOSS else 'inf')
+    except ValueError: inout.err('Invalid required loss. Must be float.')
+
+    if CONFIG_FILE:
+        config_file = open(CONFIG_FILE, 'r')
         layers = [line[:-1] for line in config_file if line[:-1]]
     else:
         layers = []
@@ -87,9 +95,9 @@ def train():
         print(f'Testing Accuracy: {accuracy}')
         print(f'Testing Loss: {loss}')
 
-        if accuracy >= required_accuracy: break
+        if accuracy >= required_accuracy and loss <= required_loss: break
 
-    save_path = config.OUTPUT if config.OUTPUT else inout.get_input('Path to save model (leave blank to discard): ')
+    save_path = inout.OUTPUT if inout.OUTPUT else inout.get_input('Path to save model (leave blank to discard): ')
     if not save_path: return
 
     extension = save_path.split('.')[-1]

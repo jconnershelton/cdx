@@ -1,7 +1,6 @@
 import gzip
 import proc
 import inout
-import config
 import cv2 as cv
 import numpy as np
 from config import CDX
@@ -92,7 +91,7 @@ def from_image_file(path):
     return CDX(images, [mapping], labels)
 
 def generate():
-    path = config.INPUT if config.INPUT else inout.get_input('Path to existing file: ')
+    path = inout.INPUT if inout.INPUT else inout.get_input('Path to existing file: ')
     if not path: inout.err('Cannot create blank CDX file.')
 
     extension = path.split('.')[-1]

@@ -1,11 +1,12 @@
 import inout
-import config
 import numpy as np
 from config import CDX
 
+TRANSFORMATION = None
+
 def transform():
-    images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
-    T = inout.get_input('Pixel transformation expression [Python lambda] (px = pixel value, r = row, c = column):\n') if not config.TRANSFORMATION else config.TRANSFORMATION
+    images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))
+    T = TRANSFORMATION if TRANSFORMATION else inout.get_input('Pixel transformation expression [Python lambda] (px = pixel value, r = row, c = column):\n')
 
     try:
         if 'r' in T or 'c' in T:

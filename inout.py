@@ -4,6 +4,9 @@ import readline
 import numpy as np
 from config import CDX
 
+INPUT = None
+OUTPUT = None
+
 class TerminalCodes:
     RED = '\033[91m'
     BRIGHT_RED = '\033[91m'
@@ -85,7 +88,7 @@ def write_cdx(cdx):
             images = [image.astype(np.uint8) for image in images]
         else: exit(2)
 
-    try: file = gzip.open(config.OUTPUT if config.OUTPUT else get_input('Path to new CDX file: '), 'wb')
+    try: file = gzip.open(OUTPUT if OUTPUT else get_input('Path to new CDX file: '), 'wb')
     except FileNotFoundError: err('Invalid CDX output path.')
 
     rows, cols = images[0].shape

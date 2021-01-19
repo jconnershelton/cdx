@@ -1,11 +1,10 @@
 import proc
 import inout
-import config
 import cv2 as cv
 from config import CDX
 
 def refit():
-    images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
+    images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))
     rows, cols = images[0].shape
 
     for i in range(len(images)):

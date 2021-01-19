@@ -1,14 +1,15 @@
 import inout
-import config
 import cv2 as cv
 import numpy as np
 from config import CDX
 
+KERNEL = None
+
 def convolve():
-    images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
+    images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))
 
     try:
-        kernel = eval(config.KERNEL if config.KERNEL else inout.get_input('Kernel: '))
+        kernel = eval(KERNEL if KERNEL else inout.get_input('Kernel: '))
         if type(kernel) is list: kernel = np.array(kernel)
     except ValueError: inout.err('Invalid kernel.')
     if not type(kernel) is np.ndarray: inout.err('Invalid kernel type.')
