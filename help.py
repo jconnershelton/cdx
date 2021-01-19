@@ -25,7 +25,7 @@ Non-Dialog Options:
   --output (-o)          Output file.
   --transformation (-t)  Pixel transformation expression (px = pixel value, r = row, c = column).
   --kernel               The 2D kernel to perform a convolution with.
-  --train_split          Percent of dataset used for training vs reserved for testing.
+  --train_split          Portion of dataset used for training vs reserved for testing.
   --epochs               Number of epochs to train a model.
   --required_accuracy    The required accuracy to stop training and save a model.
   --config_file          Path to the configuration file for training a model.

@@ -46,9 +46,9 @@ def train():
     images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))
     images = [image / 255.0 for image in images]
 
-    try: train_split = float(TRAIN_SPLIT if TRAIN_SPLIT else inout.get_input('Percent train split [float 0-1]: '))
+    try: train_split = float(TRAIN_SPLIT if TRAIN_SPLIT else inout.get_input('Train split [float 0-1]: '))
     except ValueError: inout.err('Invalid train split. Must be float.')
-    if not 0 <= train_split <= 100: inout.err('Invalid train split. Must be between 0 and 100 inclusive.')
+    if not 0 <= train_split <= 1: inout.err('Invalid train split. Must be between 0 and 1 inclusive.')
 
     try: epochs = int(EPOCHS if EPOCHS else inout.get_input('Epochs [integer > 0]: '))
     except ValueError: inout.err('Invalid epoch count. Must be integer.')

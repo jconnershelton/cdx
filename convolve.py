@@ -12,8 +12,9 @@ def convolve():
         kernel = eval(KERNEL if KERNEL else inout.get_input('Kernel: '))
         if type(kernel) is list: kernel = np.array(kernel)
     except ValueError: inout.err('Invalid kernel.')
-    if not type(kernel) is np.ndarray: inout.err('Invalid kernel type.')
-    if len(kernel.shape) != 2: inout.err('Invalid kernel shape.')
+
+    if not type(kernel) is np.ndarray: inout.err('Invalid kernel type. Must be list or Numpy array.')
+    if len(kernel.shape) != 2: inout.err('Invalid kernel shape. Must have 2 dimensions.')
     if kernel.shape[0] % 2 == 0 or kernel.shape[1] % 2 == 0: inout.err('Invalid kernel shape. Must have odd dimensions.')
 
     rPadding = kernel.shape[0] // 2
