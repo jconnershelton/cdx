@@ -15,4 +15,7 @@ def refit():
 
         images[i] = proc.scale_and_pad(images[i][box[1]:box[1] + box[3], box[0]:box[0] + box[2]], rows, cols)
 
+        print(f'\rRefit {i + 1} images.', end='')
+
+    print()
     inout.write_cdx(CDX(images, mappings, labels))

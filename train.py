@@ -3,26 +3,20 @@ import inout
 import config
 import random
 import platform
+import numpy as np
 import tensorflow as tf
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-def draw_model_summary(layers, units_list, activations):
-    total_layer_space = max(9, (max(len(name) for name in layers) + 3) if layers else 0)
-    total_units_space = max(8, (max(len(str(units)) for units in units_list) + 3) if units_list else 0)
 
+def draw_model_summary(layers):
     print(inout.TerminalCodes.CLEAR, end='')
-    print(f'{inout.TerminalCodes.BOLD}{inout.TerminalCodes.UNDERLINE}Layers{inout.TerminalCodes.END}' + ' ' * (total_layer_space - 6) + f'{inout.TerminalCodes.BOLD}{inout.TerminalCodes.UNDERLINE}Units{inout.TerminalCodes.END}' + ' ' * (total_units_space - 5) + f'{inout.TerminalCodes.BOLD}{inout.TerminalCodes.UNDERLINE}Activation{inout.TerminalCodes.END}')
-
-    for line in range(len(layers)):
-        layer = layers[line]
-        units = str(units_list[line])
-        activation = activations[line]
-
-        print(layer + ' ' * (total_layer_space - len(layer)) + units + ' ' * (total_units_space - len(units)) + activation)
+    print(f'{inout.TerminalCodes.BOLD}{inout.TerminalCodes.UNDERLINE}Layers{inout.TerminalCodes.END}')
+    for layer in layers: print(layer)
 
     print()
+
 
 def get_frozen_graph(model):
     func = tf.function(lambda x: model(x))
@@ -33,13 +27,15 @@ def get_frozen_graph(model):
 
     return frozen.graph
 
+
 def shuffle_split_data(data, labels, train_split):
     seed = random.randint(0, 256)
-    data = tf.random.shuffle(tf.convert_to_tensor(data), seed=seed)
+    data = np.expand_dims(tf.random.shuffle(tf.convert_to_tensor(data), seed=seed), axis=-1)
     labels = tf.random.shuffle(tf.convert_to_tensor(labels), seed=seed)
 
     split_idx = round(len(data) * train_split)
     return data[:split_idx], labels[:split_idx], data[split_idx:], labels[split_idx:]
+
 
 def train():
     images, mappings, labels = inout.from_cdx_file(config.INPUT if config.INPUT else inout.get_input('Path to CDX: '))
@@ -56,68 +52,32 @@ def train():
     try: required_accuracy = float(config.REQUIRED_ACCURACY if config.REQUIRED_ACCURACY else 0)
     except ValueError: inout.err('Invalid iteration count. Must be float.')
 
-    layer_names, units_list, activations = [], [], []
+    if config.MODEL_CONFIG:
+        config_file = open(config.MODEL_CONFIG, 'r')
+        layers = [line[:-1] for line in config_file if line[:-1]]
+    else:
+        layers = []
+        while True:
+            draw_model_summary(layers)
 
-    while True:
-        draw_model_summary(layer_names, units_list, activations)
+            layer = inout.get_input(f'New layer [Keras layer expression]{" (blank if done)" if len(layers) > 0 else ""}: ')
+            if not layer: break
 
-        new_layer = inout.get_input('New layer type (leave blank if done): ').lower()
-        if not new_layer: break
+            if len(layers) == 0: layer = layer[:-1] + f'{", " if "," in layer else ""}input_shape={images[0].shape + (1,)})'
+            layers.append(layer)
 
-        elif new_layer == 'dense':
-            layer_names.append('Dense')
+    if len(layers) == 0: inout.err('Must have at least one layer.')
 
-            try: units_list.append(int(inout.get_input('Units [integer > 0]: ')))
-            except ValueError: inout.err('Invalid units.')
-            if units_list[-1] <= 0: inout.err('Invalid units.')
-
-            activations.append(inout.get_input('Activation: '))
-        elif new_layer == 'flatten':
-            layer_names.append('Flatten')
-            units_list.append('N/A')
-            activations.append('N/A')
-        elif new_layer in ['convolution1d', 'conv1d']:
-            layer_names.append('Convolution1D')
-
-            try: units_list.append(int(inout.get_input('Units [integer > 0]: ')))
-            except ValueError: inout.err('Invalid units.')
-            if units_list[-1] <= 0: inout.err('Invalid units.')
-
-            activations.append(inout.get_input('Activation: '))
-        else: inout.err('Invalid layer type.')
-
-    if len(layer_names) == 0: inout.err('Must have at least one layer.')
-
-    layer_names.append('Dense')
-    units_list.append(len(mappings))
-    activations.append(inout.get_input('Output layer activation: '))
-    draw_model_summary(layer_names, units_list, activations)
-
-    layers = []
-    for i in range(len(layer_names)):
-        name = layer_names[i]
-        units = units_list[i]
-        activation = activations[i]
-
-        layer_str = f'tf.keras.layers.{name}('
-        if units != 'N/A': layer_str += f'{units},'
-        if activation != 'N/A': layer_str += f'activation="{activation}",'
-        if i == 0: layer_str += 'input_shape=train_data.shape[1:]'
-        layer_str += ')'
-
-        layers.append(layer_str)
-
-    optimizer = inout.get_input('Optimizer: ')
-    loss_metric = inout.get_input('Loss metric: ').replace('_', '').lower()
-    if loss_metric in ['sparsecategoricalcrossentropy', 'scc']: loss_metric = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
+    layers.append(f"Dense({len(mappings)}, activation='{inout.get_input('Output layer activation: ')}')")
+    draw_model_summary(layers)
 
     while True:
         tf.keras.backend.clear_session()
         train_data, train_labels, test_data, test_labels = shuffle_split_data(images, labels, train_split)
 
         model = tf.keras.models.Sequential()
-        for layer in layers: model.add(eval(layer))
-        model.compile(optimizer=optimizer, loss=loss_metric, metrics=['accuracy'])
+        for layer in layers: model.add(eval(f'tf.keras.layers.{layer}'))
+        model.compile(optimizer='adam', loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
 
         print()
         model.fit(train_data, train_labels, epochs=epochs)

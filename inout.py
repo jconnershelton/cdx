@@ -1,5 +1,6 @@
 import gzip
 import config
+import readline
 import numpy as np
 from config import CDX
 

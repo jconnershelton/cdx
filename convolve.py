@@ -29,7 +29,7 @@ def convolve():
 
         images[i] = convolved
 
-        print(f'\rConvolved {i + 1} images...', end='')
+        print(f'Convolved {i + 1} images...', end='\r')
 
     print()
     inout.write_cdx(CDX(images, mappings, labels))

@@ -15,9 +15,16 @@ def transform():
                 image = images[i]
                 rows, cols = image.shape
                 images[i] = np.array([[T(image[r, c], r, c) for c in range(cols)] for r in range(rows)], dtype=np.uint8)
+
+                print(f'\rTransformed {i + 1} images.', end='')
         else:
             T = np.vectorize(eval(f'lambda px: {T}'))
-            images = [T(image) for image in images]
+
+            for i in range(len(images)):
+                images[i] = T(images[i]).astype(np.uint8)
+
+                print(f'\rTransformed {i + 1} images.', end='')
     except SyntaxError: inout.err(f'"{T}" is not a valid transformation expression.')
 
+    print()
     inout.write_cdx(CDX(images, mappings, labels))
