@@ -76,7 +76,7 @@ def train():
 
     if len(layers) == 0: inout.err('Must have at least one layer.')
 
-    layers.append(f"Dense({len(mappings)}, activation='{inout.get_input('Output layer activation: ')}')")
+    layers.append(f"Dense({len(mappings)}, activation='softmax')")
     draw_model_summary(layers)
 
     while True:
