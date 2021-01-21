@@ -19,9 +19,13 @@ def set_arguments():
     if '-o' in sys.argv: inout.OUTPUT = sys.argv[sys.argv.index('-o') + 1]
     if '--output' in sys.argv: inout.OUTPUT = sys.argv[sys.argv.index('--output') + 1]
 
+    if '-idx' in sys.argv: display.INDEX = sys.argv[sys.argv.index('-idx') + 1]
+    if '--index' in sys.argv: display.INDEX = sys.argv[sys.argv.index('--index') + 1]
+
     if '-t' in sys.argv: transform.TRANSFORMATION = sys.argv[sys.argv.index('-t') + 1]
     if '--transformation' in sys.argv: transform.TRANSFORMATION = sys.argv[sys.argv.index('--transformation') + 1]
 
+    if '-k' in sys.argv: convolve.KERNEL = sys.argv[sys.argv.index('-k') + 1]
     if '--kernel' in sys.argv: convolve.KERNEL = sys.argv[sys.argv.index('--kernel') + 1]
 
     if '--train_split' in sys.argv: train.TRAIN_SPLIT = sys.argv[sys.argv.index('--train_split') + 1]

@@ -20,8 +20,6 @@ def draw_model_summary(layers):
     print(f'{inout.TerminalCodes.BOLD}{inout.TerminalCodes.UNDERLINE}Layers{inout.TerminalCodes.END}')
     for layer in layers: print(layer)
 
-    print()
-
 
 def get_frozen_graph(model):
     func = tf.function(lambda x: model(x))
@@ -62,16 +60,17 @@ def train():
 
     if CONFIG_FILE:
         config_file = open(CONFIG_FILE, 'r')
-        layers = [line[:-1] for line in config_file if line[:-1]]
+        layers = [line.replace('\n', '') for line in config_file if line != '\n']
     else:
         layers = []
         while True:
             draw_model_summary(layers)
+            print()
 
             layer = inout.get_input(f'New layer [Keras layer expression]{" (blank if done)" if len(layers) > 0 else ""}: ')
             if not layer: break
 
-            if len(layers) == 0: layer = layer[:-1] + f'{", " if "," in layer else ""}input_shape={images[0].shape + (1,)})'
+            # if len(layers) == 0: layer = layer[:-1] + f'{", " if "," in layer else ""}input_shape={images[0].shape + (1,)})'
             layers.append(layer)
 
     if len(layers) == 0: inout.err('Must have at least one layer.')
