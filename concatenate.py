@@ -21,7 +21,7 @@ def concatenate():
             if new_map in mappings:
                 retromaps.append(mappings.index(new_map))
             else:
-                retromaps.append(len(cdx.mappings))
+                retromaps.append(len(mappings))
                 mappings.append(new_map)
 
         labels += [retromaps[new_label] for new_label in cdx.labels]
