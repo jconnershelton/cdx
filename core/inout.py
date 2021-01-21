@@ -1,8 +1,9 @@
 import gzip
-import config
 import readline
 import numpy as np
-from config import CDX
+
+from core.config import CDX
+from core.config import VERSION
 
 INPUT = None
 OUTPUT = None
@@ -93,7 +94,7 @@ def write_cdx(cdx):
 
     rows, cols = images[0].shape
 
-    file.write(config.VERSION.to_bytes(2, 'big'))
+    file.write(VERSION.to_bytes(2, 'big'))
     file.write(rows.to_bytes(2, 'big'))
     file.write(cols.to_bytes(2, 'big'))
     file.write(len(images).to_bytes(4, 'big'))

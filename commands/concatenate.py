@@ -1,6 +1,5 @@
-import inout
-import config
-from config import CDX
+from core import inout
+from core.config import CDX
 
 def concatenate():
     cdxs = [inout.from_cdx_file(inout.INPUT)] if inout.INPUT else []

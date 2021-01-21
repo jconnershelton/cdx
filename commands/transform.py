@@ -1,6 +1,6 @@
-import inout
+from core import inout
 import numpy as np
-from config import CDX
+from core.config import CDX
 
 TRANSFORMATION = None
 

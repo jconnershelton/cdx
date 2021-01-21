@@ -1,15 +1,7 @@
 import sys
-import inout
 
-import generate
-import concatenate
-import transform
-import convolve
-import refit
-import display
-import summarize
-import train
-import help
+from core import inout
+from commands import generate, concatenate, transform, convolve, refit, display, summarize, train, help
 
 if len(sys.argv) < 2: inout.err(f'No command given. Type "cdx help" to list commands and options.')
 

@@ -1,7 +1,8 @@
-import proc
-import inout
 import cv2 as cv
-from config import CDX
+
+from core import proc
+from core import inout
+from core.config import CDX
 
 def refit():
     images, mappings, labels = inout.from_cdx_file(inout.INPUT if inout.INPUT else inout.get_input('Path to CDX: '))

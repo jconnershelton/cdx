@@ -1,5 +1,5 @@
-import inout
 import matplotlib.pyplot as plot
+from core import inout
 
 INDEX = None
 

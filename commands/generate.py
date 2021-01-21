@@ -1,9 +1,10 @@
 import gzip
-import proc
-import inout
 import cv2 as cv
 import numpy as np
-from config import CDX
+
+from core import proc
+from core import inout
+from core.config import CDX
 
 def from_idx_file(path):
     try: image_file = gzip.open(path)

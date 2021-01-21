@@ -1,7 +1,8 @@
-import inout
 import cv2 as cv
 import numpy as np
-from config import CDX
+
+from core import inout
+from core.config import CDX
 
 KERNEL = None
 

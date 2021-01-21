@@ -1,9 +1,10 @@
 import os
-import inout
 import random
 import platform
 import numpy as np
 import tensorflow as tf
+
+from core import inout
 from tensorflow.python.framework.convert_to_constants import convert_variables_to_constants_v2
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
